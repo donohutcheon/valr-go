@@ -17,6 +17,8 @@ import (
 	"time"
 )
 
+var ErrTooManyRequests = errors.New("too many requests")
+
 // Client is a Valr API client.
 type Client struct {
 	httpClient   *http.Client
@@ -85,7 +87,7 @@ func (cl *Client) do(ctx context.Context, method, path string,
 		log.Printf("valr: Request: %#v", req)
 	}
 
-	var body []byte
+	var reqBody []byte
 	if req != nil {
 		values, err := MakeURLValues(req)
 		if err != nil {
@@ -101,14 +103,23 @@ func (cl *Client) do(ctx context.Context, method, path string,
 				values.Del(key)
 			}
 		}
-		if method == http.MethodGet && values.Encode() != "" {
-			url = url + "?" + values.Encode()
+		if method == http.MethodGet {
+			if values.Encode() != "" {
+				url = url + "?" + values.Encode()
+			}
 		} else {
-			body = []byte(values.Encode())
+			reqBody, err = json.Marshal(req)
+			if err != nil {
+				return err
+			}
 		}
 	}
+	if cl.debug {
+		log.Printf("Request URL: %s", url)
+		log.Printf("Request body: %s", string(reqBody))
+	}
 
-	httpReq, err := http.NewRequest(method, url, bytes.NewReader(body))
+	httpReq, err := http.NewRequest(method, url, bytes.NewReader(reqBody))
 	if err != nil {
 		return err
 	}
@@ -123,9 +134,14 @@ func (cl *Client) do(ctx context.Context, method, path string,
 		now := time.Now()
 		timestampString := strconv.FormatInt(now.UnixNano()/1000000, 10)
 		path := strings.Replace(url, "https://api.valr.com", "", -1)
-		signature := signRequest(cl.apiKeySecret, timestampString, method, path, body)
+		signature := signRequest(cl.apiKeySecret, timestampString, method, path, reqBody)
 		httpReq.Header.Set("X-VALR-SIGNATURE", signature)
-		httpReq.Header.Set("X-VALR-TIMESTAMP", timestampString) // This might need to be in unix format
+		httpReq.Header.Set("X-VALR-TIMESTAMP", timestampString)
+		if cl.debug {
+			log.Printf("X-VALR-API-KEY: %s", cl.apiKeyPub)
+			log.Printf("X-VALR-SIGNATURE: %s", signature)
+			log.Printf("X-VALR-TIMESTAMP: %s", timestampString)
+		}
 	}
 
 	httpRes, err := cl.httpClient.Do(httpReq)
@@ -134,20 +150,25 @@ func (cl *Client) do(ctx context.Context, method, path string,
 	}
 	defer httpRes.Body.Close()
 
-	body, err = ioutil.ReadAll(httpRes.Body)
+	resBody, err := ioutil.ReadAll(httpRes.Body)
 	if err != nil {
 		return err
 	}
 	if cl.debug {
-		log.Printf("Response: %s", string(body))
+		log.Printf("Response: %s", string(resBody))
 	}
 
-	if httpRes.StatusCode != http.StatusOK {
+	if httpRes.StatusCode == 429 {
+		return ErrTooManyRequests
+	}
+
+	if httpRes.StatusCode/100 != 2 {
+		log.Printf("valr: Call: %s %s\nvalr: Request: %s\nvalr: Response: %s\n", method, path, string(reqBody), string(resBody))
 		return fmt.Errorf("valr: error response (%d %s)",
 			httpRes.StatusCode, http.StatusText(httpRes.StatusCode))
 	}
 
-	return json.Unmarshal(body, res)
+	return json.Unmarshal(resBody, res)
 }
 
 func findTags(str string) []string {

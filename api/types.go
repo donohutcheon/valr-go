@@ -102,7 +102,7 @@ type TradeInfo struct {
 	Price    decimal.Decimal `json:"price"`
 	Quantity decimal.Decimal `json:"quantity"`
 	Pair     string          `json:"currencyPair"`
-	TradedAt time.Ticker     `json:"tradedAt"`
+	TradedAt time.Time       `json:"tradedAt"`
 	Side     ResponseSide    `json:"side"`
 	TradeID  int             `json:"tradeId"`
 }
@@ -150,7 +150,7 @@ type TradeHistoryInfo struct {
 	Price      decimal.Decimal `json:"price"`
 	Quantity   decimal.Decimal `json:"quantity"`
 	Pair       string          `json:"currencyPair"`
-	TradedAt   time.Ticker     `json:"tradedAt"`
+	TradedAt   time.Time       `json:"tradedAt"`
 	TakerSide  ResponseSide    `json:"takerSide"`
 	SequenceID int             `json:"sequenceId"`
 	ID         string          `json:"id"`

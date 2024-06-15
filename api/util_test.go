@@ -4,7 +4,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/i-norden/valr-go/api"
+	"github.com/donohutcheon/valr-go/api"
 )
 
 func TestMakeURLValues(t *testing.T) {
@@ -20,7 +20,7 @@ func TestMakeURLValues(t *testing.T) {
 		B   bool      `url:"b"`
 		ABy []byte    `url:"aby"`
 		TS  S         `url:"ts"`
-		T   time.Time `url:"t"` // implements fmt.Stringer
+		T   time.Time `url:"t,omitempty"` // implements fmt.Stringer
 	}
 
 	r := Req{
@@ -32,7 +32,7 @@ func TestMakeURLValues(t *testing.T) {
 		B:   true,
 		ABy: []byte("foo"),
 		TS:  S("foo"),
-		T:   time.Date(2018, 1, 1, 0, 0, 0, 0, time.UTC),
+		T:   time.Date(2018, 1, 1, 23, 57, 12, 0, time.UTC),
 	}
 
 	v, err := api.MakeURLValues(&r)
@@ -40,7 +40,27 @@ func TestMakeURLValues(t *testing.T) {
 		t.Errorf("Expected success, got %v", err)
 		return
 	}
-	exp := "aby=foo&b=true&f32=42.4200&f64=42.4200&i=42&i64=42&s=foo&t=2018-01-01+00%3A00%3A00+%2B0000+UTC&ts=foo"
+	exp := "aby=foo&b=true&f32=42.4200&f64=42.4200&i=42&i64=42&s=foo&t=2018-01-01+23%3A57%3A12+%2B0000+UTC&ts=foo"
+	act := v.Encode()
+	if act != exp {
+		t.Errorf("Expected %q, got %q", exp, act)
+		return
+	}
+}
+
+func TestMakeURLValues2(t *testing.T) {
+	type Req struct {
+		T time.Time `url:"t,omitempty"` // implements fmt.Stringer
+	}
+
+	r := Req{}
+
+	v, err := api.MakeURLValues(&r)
+	if err != nil {
+		t.Errorf("Expected success, got %v", err)
+		return
+	}
+	exp := ""
 	act := v.Encode()
 	if act != exp {
 		t.Errorf("Expected %q, got %q", exp, act)

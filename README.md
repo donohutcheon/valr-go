@@ -7,7 +7,7 @@ Based on the [luno exchange API wrapper](https://github.com/luno/luno-go)
 ### Installation
 
 ```
-go get github.com/i-norden/valr-go
+go get github.com/donohutcheon/valr-go
 ```
 
 ### Authentication
@@ -20,7 +20,7 @@ Public and private API keys can be generated within your account at the [exchang
 import (
 	"context"
 	
-	valr "github.com/i-norden/valr-go/api"
+	valr "github.com/donohutcheon/valr-go/api"
 )
 valrClient := valr.NewClient()
 valrClient.SetAuth("api_key_public", "api_key_secret")

@@ -272,7 +272,7 @@ func (cl *Client) GetAuthFullOrderBookRequest(ctx context.Context, req *GetAuthF
 // You can limit the number of trades returned by specifying the limit parameter.
 func (cl *Client) GetAuthTradeHistoryForPairRequest(ctx context.Context, req *GetAuthTradeHistoryForPairRequest) (*GetAuthTradeHistoryForPairResponse, error) {
 	var res GetAuthTradeHistoryForPairResponse
-	err := cl.do(ctx, http.MethodGet, "/marketdata/:currencyPair/tradehistory", req, &res, true)
+	err := cl.do(ctx, http.MethodGet, "/marketdata/{currencyPair}/tradehistory", req, &res, true)
 	if err != nil {
 		return nil, err
 	}
@@ -436,11 +436,11 @@ func (cl *Client) PostNewFiatWithdrawRequest(ctx context.Context, req *PostNewFi
 //
 // A sample request body is as follows:
 //
-//{
-//    "payInCurrency": "BTC",
-//    "payAmount": "0.001",
-//    "side": "SELL"
-//}
+//	{
+//	   "payInCurrency": "BTC",
+//	   "payAmount": "0.001",
+//	   "side": "SELL"
+//	}
 func (cl *Client) PostSimpleBuyOrSellQuoteRequest(ctx context.Context, req *PostSimpleBuyOrSellQuoteRequest) (*PostSimpleBuyOrSellQuoteResponse, error) {
 	var res PostSimpleBuyOrSellQuoteResponse
 	err := cl.do(ctx, http.MethodPost, "/simple/{currencyPair}/quote", req, &res, true)
@@ -456,11 +456,11 @@ func (cl *Client) PostSimpleBuyOrSellQuoteRequest(ctx context.Context, req *Post
 //
 // A sample request body is as follows:
 //
-//{
-//    "payInCurrency": "BTC",
-//    "payAmount": "0.001",
-//    "side": "SELL"
-//}
+//	{
+//	   "payInCurrency": "BTC",
+//	   "payAmount": "0.001",
+//	   "side": "SELL"
+//	}
 func (cl *Client) PostSimpleBuyOrSellOrderRequest(ctx context.Context, req *PostSimpleBuyOrSellOrderRequest) (*PostSimpleBuyOrSellOrderResponse, error) {
 	var res PostSimpleBuyOrSellOrderResponse
 	err := cl.do(ctx, http.MethodPost, "/simple/{currencyPair}/order", req, &res, true)
@@ -476,14 +476,14 @@ func (cl *Client) PostSimpleBuyOrSellOrderRequest(ctx context.Context, req *Post
 //
 // The JSON body used to create a limit order looks like this:
 //
-//{
-//    "side": "SELL",
-//    "quantity": "0.100000",
-//    "price": "10000",
-//    "pair": "BTCZAR",
-//    "postOnly": true,
-//    "customerOrderId": "1234"
-//}
+//	{
+//	   "side": "SELL",
+//	   "quantity": "0.100000",
+//	   "price": "10000",
+//	   "pair": "BTCZAR",
+//	   "postOnly": true,
+//	   "customerOrderId": "1234"
+//	}
 func (cl *Client) PostLimitOrderRequest(ctx context.Context, req *PostLimitOrderRequest) (*PostLimitOrderResponse, error) {
 	var res PostLimitOrderResponse
 	err := cl.do(ctx, http.MethodPost, "/orders/limit", req, &res, true)
@@ -500,12 +500,12 @@ func (cl *Client) PostLimitOrderRequest(ctx context.Context, req *PostLimitOrder
 //
 // Example request body:
 //
-//{
-//    "side": "BUY",
-//    "quoteAmount": "0.100000",
-//    "pair": "BTCZAR",
-//    "customerOrderId": "1234"
-//}
+//	{
+//	   "side": "BUY",
+//	   "quoteAmount": "0.100000",
+//	   "pair": "BTCZAR",
+//	   "customerOrderId": "1234"
+//	}
 func (cl *Client) PostMarketBuyRequest(ctx context.Context, req *PostMarketOrderBuyRequest) (*PostMarketOrderResponse, error) {
 	var res PostMarketOrderResponse
 	err := cl.do(ctx, http.MethodPost, "/orders/market", req, &res, true)
@@ -522,12 +522,12 @@ func (cl *Client) PostMarketBuyRequest(ctx context.Context, req *PostMarketOrder
 //
 // Example request body:
 //
-//{
-//    "side": "SELL",
-//    "baseAmount": "0.100000",
-//    "pair": "BTCZAR",
-//    "customerOrderId": "1234"
-//}
+//	{
+//	   "side": "SELL",
+//	   "baseAmount": "0.100000",
+//	   "pair": "BTCZAR",
+//	   "customerOrderId": "1234"
+//	}
 func (cl *Client) PostMarketSellRequest(ctx context.Context, req *PostMarketOrderSellRequest) (*PostMarketOrderResponse, error) {
 	var res PostMarketOrderResponse
 	err := cl.do(ctx, http.MethodPost, "/orders/market", req, &res, true)
@@ -549,10 +549,10 @@ PRIVATE API DEL REQUESTS
 //
 // The DELETE request requires a JSON request body in the following format:
 //
-//{
-//  "orderId": "UUID",
-//  "pair": "BTCZAR"
-//}
+//	{
+//	 "orderId": "UUID",
+//	 "pair": "BTCZAR"
+//	}
 func (cl *Client) DelOrderRequest(ctx context.Context, req *DelOrderRequest) (*DelOrderResponse, error) {
 	var res DelOrderResponse
 	err := cl.do(ctx, http.MethodDelete, "/orders/order", req, &res, true)
@@ -570,10 +570,10 @@ func (cl *Client) DelOrderRequest(ctx context.Context, req *DelOrderRequest) (*D
 //
 // The DELETE request requires a JSON request body in the following format:
 //
-//{
-//  "customerOrderId": "^[0-9a-zA-Z-]{0,50}$",
-//  "pair": "BTCZAR"
-//}
+//	{
+//	 "customerOrderId": "^[0-9a-zA-Z-]{0,50}$",
+//	 "pair": "BTCZAR"
+//	}
 func (cl *Client) DelOrderByCustomerOrderIDRequest(ctx context.Context, req *DelOrderByCustomerOrderIDRequest) (*DelOrderByCustomerOrderIDResponse, error) {
 	var res DelOrderByCustomerOrderIDResponse
 	err := cl.do(ctx, http.MethodDelete, "/orders/order", req, &res, true)

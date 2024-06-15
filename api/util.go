@@ -5,6 +5,8 @@ import (
 	"net/url"
 	"reflect"
 	"strconv"
+	"strings"
+	"time"
 )
 
 // MakeURLValues converts a request struct into a url.Values map.
@@ -16,12 +18,26 @@ func MakeURLValues(v interface{}) (url.Values, error) {
 
 	for i := 0; i < typElem.NumField(); i++ {
 		field := typElem.Field(i)
-		urlTag := field.Tag.Get("url")
+		tagParams := strings.Split(field.Tag.Get("url"), ",")
+		if len(tagParams) == 0 {
+			continue
+		}
+		urlTag := tagParams[0]
+		omitEmpty := len(tagParams) == 2 && tagParams[1] == "omitempty"
+
 		if urlTag == "" || urlTag == "-" {
 			continue
 		}
 
 		fieldValue := valElem.Field(i)
+		if omitEmpty && fieldValue.IsZero() {
+			continue
+		}
+
+		if fieldValue.Type() == reflect.TypeOf(time.Time{}) {
+			values.Set(urlTag, fieldValue.Interface().(time.Time).UTC().Format(time.RFC3339))
+			continue
+		}
 
 		stringer, ok := fieldValue.Interface().(fmt.Stringer)
 		if ok {
