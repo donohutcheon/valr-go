@@ -12,9 +12,17 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"net/url"
 	"strconv"
 	"strings"
 	"time"
+)
+
+const (
+	// defaultBaseURL is the default base URL for the Valr API.
+	defaultBaseURL = "https://api.valr.com/v1"
+	// defaultTimeout is the default timeout for requests made by the client.
+	defaultTimeout = 10 * time.Second
 )
 
 var ErrTooManyRequests = errors.New("too many requests")
@@ -22,21 +30,19 @@ var ErrTooManyRequests = errors.New("too many requests")
 // Client is a Valr API client.
 type Client struct {
 	httpClient   *http.Client
+	rateLimiter  Limiter
 	baseURL      string
 	apiKeyPub    string
 	apiKeySecret string
 	debug        bool
 }
 
-const defaultBaseURL = "https://api.valr.com/v1"
-
-const defaultTimeout = 10 * time.Second
-
 // NewClient creates a new Valr API client with the default base URL.
 func NewClient() *Client {
 	return &Client{
-		httpClient: &http.Client{Timeout: defaultTimeout},
-		baseURL:    defaultBaseURL,
+		httpClient:  &http.Client{Timeout: defaultTimeout},
+		rateLimiter: NewRateLimiter(),
+		baseURL:     defaultBaseURL,
 	}
 }
 
@@ -129,12 +135,13 @@ func (cl *Client) do(ctx context.Context, method, path string,
 		httpReq.Header.Set("Content-Type", "application/json")
 	}
 
+	cl.rateLimiter.Wait(ctx)
 	if auth {
 		httpReq.Header.Set("X-VALR-API-KEY", cl.apiKeyPub)
 		now := time.Now()
 		timestampString := strconv.FormatInt(now.UnixNano()/1000000, 10)
 		path := strings.Replace(url, "https://api.valr.com", "", -1)
-		signature := signRequest(cl.apiKeySecret, timestampString, method, path, reqBody)
+		signature := SignRequest(cl.apiKeySecret, timestampString, method, path, reqBody)
 		httpReq.Header.Set("X-VALR-SIGNATURE", signature)
 		httpReq.Header.Set("X-VALR-TIMESTAMP", timestampString)
 		if cl.debug {
@@ -171,6 +178,41 @@ func (cl *Client) do(ctx context.Context, method, path string,
 	return json.Unmarshal(resBody, res)
 }
 
+// getProtocol takes a URL string and returns its protocol (scheme).
+func getProtocol(rawurl string) (string, error) {
+	parsedURL, err := url.Parse(rawurl)
+	if err != nil {
+		return "", errors.Join(err, errors.New("failed to parse url for protocol"))
+	}
+
+	return parsedURL.Scheme, nil
+}
+
+func GetAuthHeaders(rawurl string, method string, apiKeyPub, apiKeySecret string, reqBody []byte) (http.Header, error) {
+	headers := http.Header{}
+
+	headers.Set("X-VALR-API-KEY", apiKeyPub)
+	now := time.Now()
+	timestampString := strconv.FormatInt(now.UnixNano()/1000000, 10)
+	scheme, err := getProtocol(rawurl)
+	if err != nil {
+		return nil, err
+	}
+	var path string
+	if scheme == "wss" {
+		path = strings.Replace(rawurl, "wss://api.valr.com", "", -1)
+	} else if scheme == "https" {
+		path = strings.Replace(rawurl, "https://api.valr.com", "", -1)
+	} else {
+		return nil, errors.New("unsupported protocol")
+	}
+	signature := SignRequest(apiKeySecret, timestampString, method, path, reqBody)
+	headers.Set("X-VALR-SIGNATURE", signature)
+	headers.Set("X-VALR-TIMESTAMP", timestampString)
+
+	return headers, nil
+}
+
 func findTags(str string) []string {
 	tags := make([]string, 0)
 	firstTag, remainder := findTag(str)
@@ -198,7 +240,7 @@ func findTag(str string) (string, string) {
 	return "", ""
 }
 
-func signRequest(apiSecret string, timestampString, verb, path string, body []byte) string {
+func SignRequest(apiSecret string, timestampString, verb, path string, body []byte) string {
 	// Create a new Keyed-Hash Message Authentication Code (HMAC) using SHA512 and API Secret
 	mac := hmac.New(sha512.New, []byte(apiSecret))
 
