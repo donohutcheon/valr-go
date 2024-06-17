@@ -81,6 +81,12 @@ func streamMarketsForever(ctx context.Context) {
 func tradeUpdateCallback(_ context.Context) streaming.UpdateCallback {
 	return func(update streaming.MessageTradeUpdate) {
 		fmt.Printf("Trade:\n\tPair: %s\n\tTaker's Side: %s\n\tPrice: %s\n\tQuantity: %s\n\tTimestamp: %s\n\tSequence: %s\n\tID: %s\n",
-			update.CurrencyPairSymbol, update.Data.TakerSide, update.Data.Price, update.Data.Quantity, update.Data.TradedAt, "<Not available>", update.Data.ID)
+			update.CurrencyPairSymbol,
+			update.Data.TakerSide,
+			update.Data.Price,
+			update.Data.Quantity,
+			update.Data.TradedAt,
+			"<Not available>",
+			update.Data.ID)
 	}
 }
