@@ -2,16 +2,13 @@ package main
 
 import (
 	"context"
-	"errors"
 	"fmt"
-	"github.com/donohutcheon/valr-go/api"
 	"github.com/donohutcheon/valr-go/api/streaming"
 	"github.com/joho/godotenv"
 	"log"
 	"os"
 	"os/signal"
 	"syscall"
-	"time"
 )
 
 // Function to check if file exists and return a bool.
@@ -50,68 +47,22 @@ func main() {
 
 	// Start a goroutine to wait for the signal.
 	go func() {
-		sig := <-sigs
-		fmt.Println()
-		fmt.Println("Received signal:", sig)
+		<-sigs
 		done <- true
 		cancel()
 	}()
 
 	go streamMarketsForever(ctx)
-	go pollMarketsForever(ctx)
 
 	// Block the main goroutine until a signal is received.
-	fmt.Println("Awaiting signal")
 	<-done
-	fmt.Println("Exiting")
-}
-
-func pollMarketsForever(ctx context.Context) {
-	client := api.NewClient()
-	client.SetAuth(os.Getenv("VA_KEY_ID"), os.Getenv("VA_SECRET"))
-	endTime := time.Now()
-	startTime := endTime.Add(-24 * time.Hour)
-	req := &api.GetAuthTradeHistoryForPairRequest{
-		Pair:      "BTCZAR",
-		Limit:     100,
-		Skip:      0,
-		StartTime: startTime,
-		EndTime:   endTime,
-	}
-	for {
-		select {
-		case <-ctx.Done():
-			return
-		default:
-			resp, err := client.GetAuthTradeHistoryForPairRequest(ctx, req)
-			if errors.Is(err, api.ErrTooManyRequests) {
-				log.Fatal(err)
-			}
-			if err != nil {
-				fmt.Println(err)
-				return
-			}
-			if len(*resp) < 100 {
-				fmt.Println("done")
-				return
-			} else {
-				req.Skip += 100
-			}
-
-			for _, trade := range *resp {
-				fmt.Printf("trade %+v\n", trade)
-			}
-		}
-	}
 }
 
 func streamMarketsForever(ctx context.Context) {
 	c, err := streaming.Dial(
 		os.Getenv("VA_KEY_ID"),
 		os.Getenv("VA_SECRET"),
-		streaming.WithUpdateCallback(func(update streaming.MessageTradeUpdate) {
-			fmt.Printf("Trade Update Callback: %+v\n", update)
-		}),
+		streaming.WithUpdateCallback(tradeUpdateCallback(ctx)),
 	)
 	if err != nil {
 		log.Fatal(err)
@@ -124,5 +75,12 @@ func streamMarketsForever(ctx context.Context) {
 		case <-ctx.Done():
 			return
 		}
+	}
+}
+
+func tradeUpdateCallback(_ context.Context) streaming.UpdateCallback {
+	return func(update streaming.MessageTradeUpdate) {
+		fmt.Printf("Trade:\n\tPair: %s\n\tTaker's Side: %s\n\tPrice: %s\n\tQuantity: %s\n\tTimestamp: %s\n\tSequence: %s\n\tID: %s\n",
+			update.CurrencyPairSymbol, update.Data.TakerSide, update.Data.Price, update.Data.Quantity, update.Data.TradedAt, "<Not available>", update.Data.ID)
 	}
 }

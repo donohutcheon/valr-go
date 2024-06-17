@@ -132,7 +132,6 @@ func (c *Conn) connect(keyID, keySecret string) error {
 			continue
 		}
 
-		fmt.Println("Received websocket payload: " + string(data))
 		msgType := new(MessageType)
 		err = json.Unmarshal(data, msgType)
 		if err != nil {
@@ -153,7 +152,6 @@ func (c *Conn) receivedUpdate(msgType string, data []byte) error {
 		if err != nil {
 			return err
 		}
-		fmt.Printf("%+v\n", message)
 		c.updateCallback(*message)
 	case "AUTHENTICATED":
 		// Ignore

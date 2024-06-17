@@ -14,25 +14,17 @@ go get github.com/donohutcheon/valr-go
 
 Public and private API keys can be generated within your account at the [exchange](https://www.valr.com)
 
+Create a `.env` file in the root of your project and add the following:
+
+```.env
+VA_KEY_ID=<api_key_public>
+VA_SECRET=<api_key_secret>
+```
+
 ### Example usage
 
-```go
-import (
-	"context"
-	
-	valr "github.com/donohutcheon/valr-go/api"
-)
-valrClient := valr.NewClient()
-valrClient.SetAuth("api_key_public", "api_key_secret")
-
-req := valr.GetOrderBookRequest{Pair: "XBTZAR"}
-res, err := valrClient.GetOrderBook(context.Background(), &req)
-if err != nil {
-  log.Fatal(err)
-}
-log.Println(res)
-```
+Refer to the `examples` directory for examples on how to use the http and websocket client.
 
 ### License
 
-[MIT](https://github.com/i-norden/valr-go/blob/master/LICENSE)
+This is a derived work from [github.com/i-norden/valr-go](https://github.com/i-norden/valr-go) which is licensed under the [MIT](https://github.com/i-norden/valr-go/blob/master/LICENSE) license.
