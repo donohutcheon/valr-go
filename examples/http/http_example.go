@@ -109,7 +109,7 @@ func pollMarketsForever(ctx context.Context) {
 func listSupportedPairs(ctx context.Context) {
 	client := valr.NewClient()
 	req := &valr.GetCurrencyPairsByTypeRequest{
-		PairTpe: valr.PairTypeSpot,
+		PairType: valr.PairTypeSpot,
 	}
 
 	resp, err := client.GetCurrencyPairsByType(ctx, req)

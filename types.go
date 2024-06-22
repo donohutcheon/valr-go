@@ -49,27 +49,6 @@ type PairInfo struct {
 	AutoCloseMarginFraction   decimal.Decimal `json:"autoCloseMarginFraction,omitempty"`
 }
 
-/*
-  {
-    "symbol": "BTCZAR",
-    "baseCurrency": "BTC",
-    "quoteCurrency": "ZAR",
-    "shortName": "BTC/ZAR",
-    "active": true,
-    "minBaseAmount": "0.00001",
-    "maxBaseAmount": "4.2",
-    "minQuoteAmount": "10",
-    "maxQuoteAmount": "5000000",
-    "tickSize": "1",
-    "baseDecimalPlaces": "8",
-    "marginTradingAllowed": true,
-    "currencyPairType": "SPOT",
-    "initialMarginFraction": "0.2",
-    "maintenanceMarginFraction": "0.1",
-    "autoCloseMarginFraction": "0.033333333"
-  },
-*/
-
 // OrderTypes associates order types with a specific pair
 type OrderTypes struct {
 	Pair       string   `json:"currencyPair"`
@@ -244,8 +223,8 @@ const (
 type ResponseSide string
 
 const (
-	Buy  ResponseSide = "buy"
-	Sell ResponseSide = "sell"
+	ResponseSideBuy  ResponseSide = "buy"
+	ResponseSideSell ResponseSide = "sell"
 )
 
 type PairType string
