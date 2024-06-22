@@ -1,4 +1,4 @@
-package api
+package valr
 
 import (
 	"github.com/shopspring/decimal"
@@ -27,6 +27,12 @@ type GetCurrenciesRequest struct {
 type GetCurrencyPairsRequest struct {
 	// https://api.valr.com/v1/public/pairs
 	// Empty
+}
+
+// GetCurrencyPairsByTypeRequest is the request struct for GetCurrencyPairsByType
+type GetCurrencyPairsByTypeRequest struct {
+	// https://api.valr.com/v1/public/pairs/:type
+	PairTpe PairType `json:"-" url:"pairType"` // optional: SPOT, FUTURE
 }
 
 // GetOrderTypesRequest is the request struct for GetOrderTypes

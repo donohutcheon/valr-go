@@ -1,4 +1,4 @@
-package api
+package valr
 
 import (
 	"context"
@@ -14,37 +14,49 @@ PUBLIC API GET REQUESTS
 // Returns a list of the top 20 bids and asks in the order book.
 // Ask orders are sorted by price ascending. Bid orders are sorted by price descending.
 // Orders of the same price are aggregated.
-func (cl *Client) GetOrderBook(ctx context.Context, req *GetOrderBookRequest) (*GetOrderBookResponse, error) {
-	var res GetOrderBookResponse
+func (cl *Client) GetOrderBook(ctx context.Context, req *GetOrderBookRequest) (*OrderBook, error) {
+	var res *OrderBook
 	err := cl.do(ctx, http.MethodGet, "/public/{currencyPair}/orderbook", req, &res, false)
 	if err != nil {
 		return nil, err
 	}
-	return &res, nil
+	return res, nil
 }
 
 // GetCurrencies
 //
 // Get a list of currencies supported by VALR.
-func (cl *Client) GetCurrencies(ctx context.Context, req *GetCurrenciesRequest) (*GetCurrenciesResponse, error) {
-	var res GetCurrenciesResponse
+func (cl *Client) GetCurrencies(ctx context.Context, req *GetCurrenciesRequest) ([]CurrencyInfo, error) {
+	var res []CurrencyInfo
 	err := cl.do(ctx, http.MethodGet, "/public/currencies", req, &res, false)
 	if err != nil {
 		return nil, err
 	}
-	return &res, nil
+	return res, nil
 }
 
 // GetCurrencyPairs
 //
 // Get a list of all the currency pairs supported by VALR.
-func (cl *Client) GetCurrencyPairs(ctx context.Context, req *GetCurrencyPairsRequest) (*GetCurrencyPairsResponse, error) {
-	var res GetCurrencyPairsResponse
+func (cl *Client) GetCurrencyPairs(ctx context.Context, req *GetCurrencyPairsRequest) ([]PairInfo, error) {
+	var res []PairInfo
 	err := cl.do(ctx, http.MethodGet, "/public/pairs", req, &res, false)
 	if err != nil {
 		return nil, err
 	}
-	return &res, nil
+	return res, nil
+}
+
+// GetCurrencyPairs
+//
+// Get a list of all the currency pairs supported by VALR.
+func (cl *Client) GetCurrencyPairsByType(ctx context.Context, req *GetCurrencyPairsByTypeRequest) ([]PairInfo, error) {
+	var res []PairInfo
+	err := cl.do(ctx, http.MethodGet, "/public/pairs/{pairType}", req, &res, false)
+	if err != nil {
+		return nil, err
+	}
+	return res, nil
 }
 
 // GetOrderTypesRequest
@@ -58,13 +70,13 @@ func (cl *Client) GetCurrencyPairs(ctx context.Context, req *GetCurrencyPairsReq
 // limit : Place a limit order on the Exchange.
 // market : Place a market order on the Exchange (only crypto-to-ZAR pairs).
 // simple : Similar to a market order, but allows for crypto-to-crypto pairs.
-func (cl *Client) GetOrderTypesRequest(ctx context.Context, req *GetOrderTypesRequest) (*GetOrderTypesResponse, error) {
-	var res GetOrderTypesResponse
+func (cl *Client) GetOrderTypesRequest(ctx context.Context, req *GetOrderTypesRequest) ([]OrderTypes, error) {
+	var res []OrderTypes
 	err := cl.do(ctx, http.MethodGet, "/public/ordertypes", req, &res, false)
 	if err != nil {
 		return nil, err
 	}
-	return &res, nil
+	return res, nil
 }
 
 // GetOrderTypesForPairRequest
@@ -78,37 +90,37 @@ func (cl *Client) GetOrderTypesRequest(ctx context.Context, req *GetOrderTypesRe
 // limit : Place a limit order on the Exchange.
 // market : Place a market order on the Exchange (only crypto-to-ZAR pairs).
 // simple : Similar to a market order, but allows for crypto-to-crypto pairs.
-func (cl *Client) GetOrderTypesForPairRequest(ctx context.Context, req *GetOrderTypesForPairRequest) (*GetOrderTypesForPairResponse, error) {
-	var res GetOrderTypesForPairResponse
+func (cl *Client) GetOrderTypesForPairRequest(ctx context.Context, req *GetOrderTypesForPairRequest) ([]string, error) {
+	var res []string
 	err := cl.do(ctx, http.MethodGet, "/public/{currencyPair}/ordertypes", req, &res, false)
 	if err != nil {
 		return nil, err
 	}
-	return &res, nil
+	return res, nil
 }
 
 // GetMarketSummaryRequest
 //
 // Get the market summary for all supported currency pairs.
-func (cl *Client) GetMarketSummaryRequest(ctx context.Context, req *GetMarketSummaryRequest) (*GetMarketSummaryResponse, error) {
-	var res GetMarketSummaryResponse
+func (cl *Client) GetMarketSummaryRequest(ctx context.Context, req *GetMarketSummaryRequest) ([]MarketSummary, error) {
+	var res []MarketSummary
 	err := cl.do(ctx, http.MethodGet, "/public/marketsummary", req, &res, false)
 	if err != nil {
 		return nil, err
 	}
-	return &res, nil
+	return res, nil
 }
 
 // GetMarketSummaryForPairRequest
 //
 // Get the market summary for a given currency pair.
-func (cl *Client) GetMarketSummaryForPairRequest(ctx context.Context, req *GetMarketSummaryForPairRequest) (*GetMarketSummaryForPairResponse, error) {
-	var res GetMarketSummaryForPairResponse
+func (cl *Client) GetMarketSummaryForPairRequest(ctx context.Context, req *GetMarketSummaryForPairRequest) (*MarketSummary, error) {
+	var res *MarketSummary
 	err := cl.do(ctx, http.MethodGet, "/public/{currencyPair}/marketsummary", req, &res, false)
 	if err != nil {
 		return nil, err
 	}
-	return &res, nil
+	return res, nil
 }
 
 // GetServerTimeRequest
@@ -130,38 +142,38 @@ PRIVATE API GET REQUESTS
 // GetAccountBalancesRequest
 //
 // Returns the list of all wallets with their respective balances.
-func (cl *Client) GetAccountBalancesRequest(ctx context.Context, req *GetAccountBalancesRequest) (*GetAccountBalancesResponse, error) {
-	var res GetAccountBalancesResponse
+func (cl *Client) GetAccountBalancesRequest(ctx context.Context, req *GetAccountBalancesRequest) ([]AccountBalance, error) {
+	var res []AccountBalance
 	err := cl.do(ctx, http.MethodGet, "/account/balances", req, &res, true)
 	if err != nil {
 		return nil, err
 	}
-	return &res, nil
+	return res, nil
 }
 
 // GetTransactionHistoryRequest
 //
 // Transaction history for your account. Note: This API supports pagination.
-func (cl *Client) GetTransactionHistoryRequest(ctx context.Context, req *GetTransactionHistoryRequest) (*GetTransactionHistoryResponse, error) {
-	var res GetTransactionHistoryResponse
+func (cl *Client) GetTransactionHistoryRequest(ctx context.Context, req *GetTransactionHistoryRequest) ([]TransactionInfo, error) {
+	var res []TransactionInfo
 	err := cl.do(ctx, http.MethodGet, "/account/transactionhistory", req, &res, true)
 	if err != nil {
 		return nil, err
 	}
-	return &res, nil
+	return res, nil
 }
 
 // GetTradeHistoryForPairRequest
 //
 // Get the last 100 recent trades for a given currency pair for your account.
 // You can limit the number of trades returned by specifying the limit parameter.
-func (cl *Client) GetTradeHistoryForPairRequest(ctx context.Context, req *GetTradeHistoryForPairRequest) (*GetTradeHistoryForPairResponse, error) {
-	var res GetTradeHistoryForPairResponse
+func (cl *Client) GetTradeHistoryForPairRequest(ctx context.Context, req *GetTradeHistoryForPairRequest) ([]TradeInfo, error) {
+	var res []TradeInfo
 	err := cl.do(ctx, http.MethodGet, "/account/{currencyPair}/tradehistory", req, &res, true)
 	if err != nil {
 		return nil, err
 	}
-	return &res, nil
+	return res, nil
 }
 
 // GetDepositAddressRequest
@@ -192,49 +204,49 @@ func (cl *Client) GetWithdrawInfoRequest(ctx context.Context, req *GetWithdrawIn
 // GetWithdrawStatusRequest
 //
 // Check the status of a withdrawal.
-func (cl *Client) GetWithdrawStatusRequest(ctx context.Context, req *GetWithdrawStatusRequest) (*GetWithdrawStatusResponse, error) {
-	var res GetWithdrawStatusResponse
+func (cl *Client) GetWithdrawStatusRequest(ctx context.Context, req *GetWithdrawStatusRequest) (*WithdrawInfo, error) {
+	var res *WithdrawInfo
 	err := cl.do(ctx, http.MethodGet, "/wallet/crypto/{currencyCode}/withdraw/{withdrawId}", req, &res, true)
 	if err != nil {
 		return nil, err
 	}
-	return &res, nil
+	return res, nil
 }
 
 // GetDepositHistoryForAssetRequest
 //
 // Get the Deposit History records for a given currency.
-func (cl *Client) GetDepositHistoryForAssetRequest(ctx context.Context, req *GetDepositHistoryForAssetRequest) (*GetDepositHistoryForAssetResponse, error) {
-	var res GetDepositHistoryForAssetResponse
+func (cl *Client) GetDepositHistoryForAssetRequest(ctx context.Context, req *GetDepositHistoryForAssetRequest) ([]DepositInfo, error) {
+	var res []DepositInfo
 	err := cl.do(ctx, http.MethodGet, "/wallet/crypto/{currencyCode}/deposit/history", req, &res, true)
 	if err != nil {
 		return nil, err
 	}
-	return &res, nil
+	return res, nil
 }
 
 // GetWithdrawHistoryForAssetRequest
 //
 // Get Withdrawal History records for a given currency.
-func (cl *Client) GetWithdrawHistoryForAssetRequest(ctx context.Context, req *GetWithdrawHistoryForAssetRequest) (*GetWithdrawHistoryForAssetResponse, error) {
-	var res GetWithdrawHistoryForAssetResponse
+func (cl *Client) GetWithdrawHistoryForAssetRequest(ctx context.Context, req *GetWithdrawHistoryForAssetRequest) ([]WithdrawInfo, error) {
+	var res []WithdrawInfo
 	err := cl.do(ctx, http.MethodGet, "/wallet/crypto/{currencyCode}/withdraw/history", req, &res, true)
 	if err != nil {
 		return nil, err
 	}
-	return &res, nil
+	return res, nil
 }
 
 // GetBankAccountForAssetRequest
 // Get a list of bank accounts that are linked to your VALR account.
 // Bank accounts can be linked by signing in to your account on www.VALR.com.
-func (cl *Client) GetBankAccountForAssetRequest(ctx context.Context, req *GetBankAccountForAssetRequest) (*GetBankAccountForAssetResponse, error) {
-	var res GetBankAccountForAssetResponse
+func (cl *Client) GetBankAccountForAssetRequest(ctx context.Context, req *GetBankAccountForAssetRequest) ([]BankInfo, error) {
+	var res []BankInfo
 	err := cl.do(ctx, http.MethodGet, "/wallet/fiat/{currencyCode}/accounts", req, &res, true)
 	if err != nil {
 		return nil, err
 	}
-	return &res, nil
+	return res, nil
 }
 
 // GetAuthOrderBookRequest
@@ -242,13 +254,13 @@ func (cl *Client) GetBankAccountForAssetRequest(ctx context.Context, req *GetBan
 // Returns a list of the top 20 bids and asks in the order book.
 // Ask orders are sorted by price ascending. Bid orders are sorted by price descending.
 // Orders of the same price are aggregated.
-func (cl *Client) GetAuthOrderBookRequest(ctx context.Context, req *GetAuthOrderBookRequest) (*GetAuthOrderBookResponse, error) {
-	var res GetAuthOrderBookResponse
+func (cl *Client) GetAuthOrderBookRequest(ctx context.Context, req *GetAuthOrderBookRequest) (*OrderBook, error) {
+	var res *OrderBook
 	err := cl.do(ctx, http.MethodGet, "/marketdata/{currencyPair}/orderbook", req, &res, true)
 	if err != nil {
 		return nil, err
 	}
-	return &res, nil
+	return res, nil
 }
 
 // GetAuthFullOrderBookRequest
@@ -257,26 +269,26 @@ func (cl *Client) GetAuthOrderBookRequest(ctx context.Context, req *GetAuthOrder
 // Ask orders are sorted by price ascending.
 // Bid orders are sorted by price descending.
 // Orders of the same price are aggregated.
-func (cl *Client) GetAuthFullOrderBookRequest(ctx context.Context, req *GetAuthFullOrderBookRequest) (*GetAuthFullOrderBookResponse, error) {
-	var res GetAuthFullOrderBookResponse
+func (cl *Client) GetAuthFullOrderBookRequest(ctx context.Context, req *GetAuthFullOrderBookRequest) (*OrderBook, error) {
+	var res *OrderBook
 	err := cl.do(ctx, http.MethodGet, "/marketdata/{currencyPair}/orderbook/full", req, &res, true)
 	if err != nil {
 		return nil, err
 	}
-	return &res, nil
+	return res, nil
 }
 
 // GetAuthTradeHistoryForPairRequest
 //
 // Get the last 100 recent trades for a given currency pair.
 // You can limit the number of trades returned by specifying the limit parameter.
-func (cl *Client) GetAuthTradeHistoryForPairRequest(ctx context.Context, req *GetAuthTradeHistoryForPairRequest) (*GetAuthTradeHistoryForPairResponse, error) {
-	var res GetAuthTradeHistoryForPairResponse
+func (cl *Client) GetAuthTradeHistoryForPairRequest(ctx context.Context, req *GetAuthTradeHistoryForPairRequest) ([]TradeHistoryInfo, error) {
+	var res []TradeHistoryInfo
 	err := cl.do(ctx, http.MethodGet, "/marketdata/{currencyPair}/tradehistory", req, &res, true)
 	if err != nil {
 		return nil, err
 	}
-	return &res, nil
+	return res, nil
 }
 
 // GetSimpleBuyOrSellOrderStatusRequest
@@ -312,38 +324,38 @@ func (cl *Client) GetOrderStatusByOrderIDRequest(ctx context.Context, req *GetOr
 // This API returns the status of an order that was placed on the Exchange queried using customerOrderId.
 // The customer can specify a customerOrderId while placing an order on the Exchange.
 // Use this API to query the order status using that customerOrderId.
-func (cl *Client) GetOrderStatusByCustomerOrderIDRequest(ctx context.Context, req *GetOrderStatusByCustomerOrderIDRequest) (*GetOrderStatusByCustomerOrderIDResponse, error) {
-	var res GetOrderStatusByCustomerOrderIDResponse
+func (cl *Client) GetOrderStatusByCustomerOrderIDRequest(ctx context.Context, req *GetOrderStatusByCustomerOrderIDRequest) (*GetOrderStatusByOrderIDResponse, error) {
+	var res *GetOrderStatusByOrderIDResponse
 	err := cl.do(ctx, http.MethodGet, "/orders/{currencyPair}/customerorderid/{customerOrderId}", req, &res, true)
 	if err != nil {
 		return nil, err
 	}
-	return &res, nil
+	return res, nil
 }
 
 // GetAllOpenOrdersRequest
 //
 // Get all open orders for your account.
 // A customerOrderId field will be returned in the response for all those orders that were created with a customerOrderId field.
-func (cl *Client) GetAllOpenOrdersRequest(ctx context.Context, req *GetAllOpenOrdersRequest) (*GetAllOpenOrdersResponse, error) {
-	var res GetAllOpenOrdersResponse
+func (cl *Client) GetAllOpenOrdersRequest(ctx context.Context, req *GetAllOpenOrdersRequest) ([]OpenOrder, error) {
+	var res []OpenOrder
 	err := cl.do(ctx, http.MethodGet, "/orders/open", req, &res, true)
 	if err != nil {
 		return nil, err
 	}
-	return &res, nil
+	return res, nil
 }
 
 // GetOrderHistoryRequest
 //
 // Get historical orders placed by you.
-func (cl *Client) GetOrderHistoryRequest(ctx context.Context, req *GetOrderHistoryRequest) (*GetOrderHistoryResponse, error) {
-	var res GetOrderHistoryResponse
+func (cl *Client) GetOrderHistoryRequest(ctx context.Context, req *GetOrderHistoryRequest) ([]OrderReceipt, error) {
+	var res []OrderReceipt
 	err := cl.do(ctx, http.MethodGet, "/orders/history", req, &res, true)
 	if err != nil {
 		return nil, err
 	}
-	return &res, nil
+	return res, nil
 }
 
 // GetOrderHistorySummaryByOrderIDRequest
@@ -378,26 +390,26 @@ func (cl *Client) GetOrderHistorySummaryByCustomerOrderIDRequest(ctx context.Con
 //
 // Get a detailed history of an order's statuses. This call returns an array of "Order Status" objects.
 // The latest and most up-to-date status of this order is the zeroth element in the array.
-func (cl *Client) GetOrderHistoryDetailsByOrderIDRequest(ctx context.Context, req *GetOrderHistoryDetailsByOrderIDRequest) (*GetOrderHistoryDetailsByOrderIDResponse, error) {
-	var res GetOrderHistoryDetailsByOrderIDResponse
+func (cl *Client) GetOrderHistoryDetailsByOrderIDRequest(ctx context.Context, req *GetOrderHistoryDetailsByOrderIDRequest) ([]OrderStatus, error) {
+	var res []OrderStatus
 	err := cl.do(ctx, http.MethodGet, "/orders/history/detail/orderid/{orderId}", req, &res, true)
 	if err != nil {
 		return nil, err
 	}
-	return &res, nil
+	return res, nil
 }
 
 // GetOrderHistoryDetailsByCustomerOrderIDRequest
 //
 // Get a detailed history of an order's statuses. This call returns an array of "Order Status" objects.
 // The latest and most up-to-date status of this order is the zeroth element in the array.
-func (cl *Client) GetOrderHistoryDetailsByCustomerOrderIDRequest(ctx context.Context, req *GetOrderHistoryDetailsByCustomerOrderIDRequest) (*GetOrderHistoryDetailsByCustomerOrderIDResponse, error) {
-	var res GetOrderHistoryDetailsByCustomerOrderIDResponse
+func (cl *Client) GetOrderHistoryDetailsByCustomerOrderIDRequest(ctx context.Context, req *GetOrderHistoryDetailsByCustomerOrderIDRequest) ([]OrderStatus, error) {
+	var res []OrderStatus
 	err := cl.do(ctx, http.MethodGet, "/orders/history/detail/customerorderid/{customerOrderId}", req, &res, true)
 	if err != nil {
 		return nil, err
 	}
-	return &res, nil
+	return res, nil
 }
 
 /*

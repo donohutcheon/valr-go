@@ -1,10 +1,9 @@
-package api_test
+package valr_test
 
 import (
+	"github.com/donohutcheon/valr-go"
 	"testing"
 	"time"
-
-	"github.com/donohutcheon/valr-go/api"
 )
 
 func TestMakeURLValues(t *testing.T) {
@@ -35,7 +34,7 @@ func TestMakeURLValues(t *testing.T) {
 		T:   time.Date(2018, 1, 1, 23, 57, 12, 0, time.UTC),
 	}
 
-	v, err := api.MakeURLValues(&r)
+	v, err := valr.MakeURLValues(&r)
 	if err != nil {
 		t.Errorf("Expected success, got %v", err)
 		return
@@ -55,7 +54,7 @@ func TestMakeURLValues2(t *testing.T) {
 
 	r := Req{}
 
-	v, err := api.MakeURLValues(&r)
+	v, err := valr.MakeURLValues(&r)
 	if err != nil {
 		t.Errorf("Expected success, got %v", err)
 		return

@@ -4,11 +4,12 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/donohutcheon/valr-go/api"
+	"github.com/donohutcheon/valr-go"
 	"github.com/joho/godotenv"
 	"log"
 	"os"
 	"os/signal"
+	"strconv"
 	"syscall"
 	"time"
 )
@@ -55,6 +56,7 @@ func main() {
 	}()
 
 	go pollMarketsForever(ctx)
+	go listSupportedPairs(ctx)
 
 	// Block the main goroutine until a signal is received.
 	<-done
@@ -62,11 +64,11 @@ func main() {
 }
 
 func pollMarketsForever(ctx context.Context) {
-	client := api.NewClient()
+	client := valr.NewClient()
 	client.SetAuth(os.Getenv("VA_KEY_ID"), os.Getenv("VA_SECRET"))
 	endTime := time.Now()
-	startTime := endTime.Add(-24 * time.Hour)
-	req := &api.GetAuthTradeHistoryForPairRequest{
+	startTime := endTime.Add(-6 * time.Minute)
+	req := &valr.GetAuthTradeHistoryForPairRequest{
 		Pair:      "BTCZAR",
 		Limit:     100,
 		Skip:      0,
@@ -79,23 +81,58 @@ func pollMarketsForever(ctx context.Context) {
 			return
 		default:
 			resp, err := client.GetAuthTradeHistoryForPairRequest(ctx, req)
-			if errors.Is(err, api.ErrTooManyRequests) {
+			if errors.Is(err, valr.ErrTooManyRequests) {
 				log.Fatal(err)
 			}
 			if err != nil {
 				fmt.Println(err)
 				return
 			}
-			if len(*resp) < 100 {
-				fmt.Println("done")
-				return
+
+			if len(resp) == 0 {
+				continue
+			}
+			fmt.Printf("got trades, %d, %d, %d\n", resp[0].SequenceID, resp[len(resp)-1].SequenceID, len(resp))
+			if len(resp) < 100 {
 			} else {
 				req.Skip += 100
 			}
 
-			for _, trade := range *resp {
+			for _, trade := range resp {
 				fmt.Printf("Trade:\n\tPair: %s\n\tTaker's Side: %s\n\tPrice: %s\n\tQuantity: %s\n\tTimestamp: %s\n\tSequence: %d\n\tTrade ID: %s\n", trade.Pair, trade.TakerSide, trade.Price, trade.Quantity, trade.TradedAt, trade.SequenceID, trade.ID)
 			}
 		}
+		return
 	}
+}
+
+func listSupportedPairs(ctx context.Context) {
+	client := valr.NewClient()
+	req := &valr.GetCurrencyPairsByTypeRequest{
+		PairTpe: valr.PairTypeSpot,
+	}
+
+	resp, err := client.GetCurrencyPairsByType(ctx, req)
+	if errors.Is(err, valr.ErrTooManyRequests) {
+		log.Fatal(err)
+	}
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+
+	for _, pi := range resp {
+		i, err := strconv.ParseInt(pi.BaseDecimalPlaces, 10, 64)
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
+		fmt.Printf(
+			"Pair Info:\n\tbase: %s\n\tcounter: %s\n\tshort name: %s\n\t"+
+				"pair type: %s\n\tsymbol: %s\n\tactive: %#v\n\tbase decimal places: %d\n",
+			pi.BaseCurrency, pi.QuoteCurrency, pi.ShortName, pi.CurrencyPairType, pi.Symbol,
+			pi.Active, i,
+		)
+	}
+
 }

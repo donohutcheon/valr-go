@@ -3,7 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
-	"github.com/donohutcheon/valr-go/api/streaming"
+	streaming2 "github.com/donohutcheon/valr-go/streaming"
 	"github.com/joho/godotenv"
 	"log"
 	"os"
@@ -59,10 +59,10 @@ func main() {
 }
 
 func streamMarketsForever(ctx context.Context) {
-	c, err := streaming.Dial(
+	c, err := streaming2.Dial(
 		os.Getenv("VA_KEY_ID"),
 		os.Getenv("VA_SECRET"),
-		streaming.WithUpdateCallback(tradeUpdateCallback(ctx)),
+		streaming2.WithUpdateCallback(tradeUpdateCallback(ctx)),
 	)
 	if err != nil {
 		log.Fatal(err)
@@ -78,8 +78,8 @@ func streamMarketsForever(ctx context.Context) {
 	}
 }
 
-func tradeUpdateCallback(_ context.Context) streaming.UpdateCallback {
-	return func(update streaming.MessageTradeUpdate) {
+func tradeUpdateCallback(_ context.Context) streaming2.UpdateCallback {
+	return func(update streaming2.MessageTradeUpdate) {
 		fmt.Printf("Trade:\n\tPair: %s\n\tTaker's Side: %s\n\tPrice: %s\n\tQuantity: %s\n\tTimestamp: %s\n\tSequence: %s\n\tID: %s\n",
 			update.CurrencyPairSymbol,
 			update.Data.TakerSide,

@@ -1,4 +1,4 @@
-package api
+package valr
 
 import (
 	"time"
@@ -31,16 +31,44 @@ type CurrencyInfo struct {
 
 // PairInfo holds info for a specific pair
 type PairInfo struct {
-	Symbol         string          `json:"symbol"`
-	BaseCurrency   string          `json:"baseCurrency"`
-	QuoteCurrency  string          `json:"quoteCurrency"`
-	ShortName      string          `json:"shortName"`
-	Active         bool            `json:"active"`
-	MinBaseAmount  decimal.Decimal `json:"minBaseAmount"`
-	MaxBaseAmount  decimal.Decimal `json:"maxBaseAmount"`
-	MinQuoteAmount decimal.Decimal `json:"minQuoteAmount"`
-	MaxQuoteAmount decimal.Decimal `json:"maxQuoteAmount"`
+	Symbol                    string          `json:"symbol"`
+	BaseCurrency              string          `json:"baseCurrency"`
+	QuoteCurrency             string          `json:"quoteCurrency"`
+	ShortName                 string          `json:"shortName"`
+	Active                    bool            `json:"active"`
+	MinBaseAmount             decimal.Decimal `json:"minBaseAmount"`
+	MaxBaseAmount             decimal.Decimal `json:"maxBaseAmount"`
+	MinQuoteAmount            decimal.Decimal `json:"minQuoteAmount"`
+	MaxQuoteAmount            decimal.Decimal `json:"maxQuoteAmount"`
+	TickSize                  decimal.Decimal `json:"tickSize"`
+	BaseDecimalPlaces         string          `json:"baseDecimalPlaces"`
+	MarginTradingAllowed      bool            `json:"marginTradingAllowed"`
+	CurrencyPairType          PairType        `json:"currencyPairType"`
+	InitialMarginFraction     decimal.Decimal `json:"initialMarginFraction,omitempty"`
+	MaintenanceMarginFraction decimal.Decimal `json:"maintenanceMarginFraction,omitempty"`
+	AutoCloseMarginFraction   decimal.Decimal `json:"autoCloseMarginFraction,omitempty"`
 }
+
+/*
+  {
+    "symbol": "BTCZAR",
+    "baseCurrency": "BTC",
+    "quoteCurrency": "ZAR",
+    "shortName": "BTC/ZAR",
+    "active": true,
+    "minBaseAmount": "0.00001",
+    "maxBaseAmount": "4.2",
+    "minQuoteAmount": "10",
+    "maxQuoteAmount": "5000000",
+    "tickSize": "1",
+    "baseDecimalPlaces": "8",
+    "marginTradingAllowed": true,
+    "currencyPairType": "SPOT",
+    "initialMarginFraction": "0.2",
+    "maintenanceMarginFraction": "0.1",
+    "autoCloseMarginFraction": "0.033333333"
+  },
+*/
 
 // OrderTypes associates order types with a specific pair
 type OrderTypes struct {
@@ -218,4 +246,11 @@ type ResponseSide string
 const (
 	Buy  ResponseSide = "buy"
 	Sell ResponseSide = "sell"
+)
+
+type PairType string
+
+const (
+	PairTypeSpot   PairType = "SPOT"
+	PairTypeFuture PairType = "FUTURE"
 )

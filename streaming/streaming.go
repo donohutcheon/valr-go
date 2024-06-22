@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/donohutcheon/valr-go/api"
+	"github.com/donohutcheon/valr-go"
 	"io"
 	"log"
 	"net/http"
@@ -90,7 +90,7 @@ func (c *Conn) manageForever(keyID, keySecret string) {
 
 func (c *Conn) connect(keyID, keySecret string) error {
 	url := tradeWebSocketAddr
-	headers, err := api.GetAuthHeaders(tradeWebSocketAddr, http.MethodGet, keyID, keySecret, nil)
+	headers, err := valr.GetAuthHeaders(tradeWebSocketAddr, http.MethodGet, keyID, keySecret, nil)
 	if err != nil {
 		return errors.Join(err, errors.New("failed to calculate auth headers"))
 	}
